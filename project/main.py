@@ -75,10 +75,10 @@ class LoginPage:
             if name=='':
                 user.insert(0, 'Enter email')
 
-        user=tk.Label(frame, text='Email', fg='white', font=('Inter', 14, 'bold'), bg='#748299' ).place(x=20, y=60)
-        user = Entry(frame, width=25, fg='white', border=0, font=('Inter', 12), bg='#748299')
+        user=tk.Label(frame, text='Email', fg='white', font=('Inter', 14, 'bold'), bg='#748299' ).place(x=20, y=58)
+        user = Entry(frame, width=25, fg='white', border=0, font=('Inter', 14), bg='#748299')
         user.place(x=25, y=85,)
-        user.insert(0, 'Enter email')
+        user.insert(0, 'enter email')
         user.bind('<FocusIn>', on_enter)
         user.bind('<FocusOut>', on_leave)
         Frame(frame, width=255, height=1, bg='black').place(x=25, y=107)
@@ -90,9 +90,9 @@ class LoginPage:
         def on_leave(e):
             name=code.get()
             if name=='':
-                code.insert(0, 'Enter password')
-        code = Label(frame, text='Password', fg='white', font=('Inter', 14, 'bold'), bg='#748299').place(x=20, y=125)
-        code = Entry(frame, width=25, fg='black', border=0, font=('Inter', 12), show='*', bg='#748299')
+                code.insert(0, 'enter password')
+        code = Label(frame, text='Password', fg='white', font=('Inter', 14, 'bold'), bg='#748299').place(x=20, y=123)
+        code = Entry(frame, width=25, fg='white', border=0, font=('Inter', 14), show='*', bg='#748299')
         code.place(x=25, y=155,)
         code.insert(0, 'Enter password')
         code.bind('<FocusIn>', on_enter)

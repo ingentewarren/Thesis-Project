@@ -21,13 +21,14 @@ try:
     cur.execute("DROP TABLE IF EXISTS reservation")
     
     create_script = '''CREATE TABLE IF NOT EXISTS reservation (
-                            id INT(100) NOT NULL AUTO_INCREMENT,
-                            name varchar(100) NOT NULL,
-                            account_type varchar(100) NOT NULL,
-                            room_number int(100) NOT NULL,
-                            event varchar(100) NOT NULL,
-                            time_start TIME NOT NULL,
-                            time_end TIME NOT NULL,
+                            id INT AUTO_INCREMENT,
+                            name VARCHAR(255),
+                            account_Type VARCHAR(255),
+                            room_number VARCHAR(255),
+                            event VARCHAR(255),
+                            subject_Code VARCHAR(255),
+                            time_Start TIME,
+                            time_End TIME,
                             PRIMARY key (id)
                         )'''
     cur.execute(create_script)

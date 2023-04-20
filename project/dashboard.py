@@ -50,16 +50,35 @@ class MainFrame:
             room_occupied_window(room_occupied_window1)
         
         def default():
-            global room_back
+            global room_back, dashboard_icon, classroom_icon, account_icon
+
+            img = Image.open('image/room.png')
+            dashboard = Image.open('image/dashboard-icon.png')
+            classroom = Image.open('image/classroom-icon.png')
+            account = Image.open('image/account-icon.png')
 
             f2=Frame(dash, width=1000, height=600)
             f2.place(x=0, y=40)
             l2=Label(dash, text='Welcome to the System', fg='#2B3467', font=('Inter', 24, 'bold'))
-            l2.place(x=200, y=80)
-            img = Image.open('image/room.png')
+            l2.place(x=300, y=50)
+
             room_back = ImageTk.PhotoImage(img.resize(size=(450, 330)))
             background = Label(f2, image=room_back)
-            background.place(x=270, y=100)
+            background.place(x=270, y=70)
+
+            dashboard_icon = ImageTk.PhotoImage(dashboard.resize(size=(200, 80)))
+            dashboard_icon_bg = Button(f2, image=dashboard_icon, border=0)
+            dashboard_icon_bg.place(x=100, y=440)
+
+            classroom_icon = ImageTk.PhotoImage(classroom.resize(size=(200, 80)))
+            classroom_icon_bg = Button(f2, image=classroom_icon, border=0)
+            classroom_icon_bg.place(x=400, y=440)
+
+            account_icon = ImageTk.PhotoImage(account.resize(size=(200, 80)))
+            account_icon_bg = Button(f2, image=account_icon, border=0)
+            account_icon_bg.place(x=700, y=440)
+
+
 
         def multiple_window():
             global logo

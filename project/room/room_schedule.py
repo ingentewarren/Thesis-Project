@@ -48,11 +48,19 @@ def add_schedule_event(start_datetime, end_datetime, room_id):
     cursor = db.cursor()
     query = "INSERT INTO schedule (day, start_time, end_time, room_number) VALUES (%s, %s, %s, %s)"
     params = (start_datetime.strftime("%A"), start_datetime.time(), end_datetime.time(), room_id)
-    cursor.execute(query, params)
-
-    # Commit the changes and close the database connection
-    db.commit()
-    db.close()
+    try:
+        cursor.execute(query, params)
+        # Commit the changes and close the database connection
+        db.commit()
+        db.close()
+        print("Schedule event added successfully.")
+    except mysql.connector.IntegrityError as e:
+        if 'Duplicate entry' in str(e):
+            print("Error: Schedule event already exists.")
+        else:
+            print("Error: Failed to add schedule event.")
+        db.rollback()
+        db.close()
 
 def get_schedule(day):
     # Connect to the database
@@ -145,9 +153,10 @@ schedule_list = [
     (0, datetime.time(14, 0), datetime.time(15, 0), 312),  # Monday, 2:00 PM to 3:00 PM
     (1, datetime.time(9, 0), datetime.time(10, 0), 312),  # Monday, 9:00 AM to 10:00 AM
     (1, datetime.time(14, 0), datetime.time(15, 0), 312),
-    (2, datetime.time(6, 47), datetime.time(7, 0), 312),
-    (3, datetime.time(9, 0), datetime.time(10, 0), 312),  
+    (2, datetime.time(6, 47), datetime.time(7, 0), 311),
+    (3, datetime.time(9, 0), datetime.time(10, 0), 311),  
     (4, datetime.time(14, 0), datetime.time(15, 0), 312),
 ]
 
 schedule_room_custom(schedule_list)
+

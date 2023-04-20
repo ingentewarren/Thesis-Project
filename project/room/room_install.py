@@ -114,71 +114,111 @@ class room_info_window:
             location = StringVar()
             status = StringVar()
 
-            conn = mysql.connector.connect(
-                host = DB_hostname,
-                user = DB_username,
-                password = DB_password,
-                database = DB_database,
-                port = DB_port
-                )
-            mycursor=conn.cursor()
-
-            options = []
-            query = "SELECT room_number FROM room"
-            mycursor.execute(query)
-            result = mycursor.fetchall()
-            for i in result:
-                options.append(str(i[0]))
-
-            def lookup_room(event):
-                mydb = mysql.connector.connect(
+            try:
+                conn = mysql.connector.connect(
                     host = DB_hostname,
                     user = DB_username,
                     password = DB_password,
                     database = DB_database,
                     port = DB_port
-                )
-                mycursor = mydb.cursor()
+                    )
+                mycursor=conn.cursor()
 
-                option = room_list.get()
-                cid = option.split(',')[0]
-                query = "SELECT * FROM room WHERE room_number = %s"
-                mycursor.execute(query, (cid,))
-                row = mycursor.fetchone()
-                for i in row:
-                    room_num.set(row[1])
-                    department.set(row[2])
-                    location.set(row[3])
-                    status.set(row[4])
+                options = []
+                query = "SELECT room_number FROM room"
+                mycursor.execute(query)
+                result = mycursor.fetchall()
+                for i in result:
+                    options.append(str(i[0]))
 
-            opts = StringVar()
-            Label(self.room_info, text='Room Information', fg='#2B3467', font=('Inter', 24, 'bold'), bg='#d8dee8').place(x=50, y=20)
-            Label(self.room_info, textvariable=opts, font=('Inter',12, 'bold'), fg='#2B3467', bg='#d8dee8').place(x=135   , y=70)
-            Label(self.room_info, text="Room Number: ", font=('Inter', 11, 'bold'), fg='#2B3467', bg='#d8dee8').place(x=20, y=70)
+                def lookup_room(event):
+                    try:
+                        mydb = mysql.connector.connect(
+                            host = DB_hostname,
+                            user = DB_username,
+                            password = DB_password,
+                            database = DB_database,
+                            port = DB_port
+                        )
+                        mycursor = mydb.cursor()
 
-            room_list = ttk.Combobox(self.room_info, textvariable=opts, width=55)
-            room_list['values'] = options
-            room_list.place(x=20, y=95)
-            room_list.current(0)
-            room_list.bind("<<ComboboxSelected>>", lookup_room)
+                        option = room_list.get()
+                        cid = option.split(',')[0]
+                        query = "SELECT * FROM room WHERE room_number = %s"
+                        mycursor.execute(query, (cid,))
+                        row = mycursor.fetchone()
+                        for i in row:
+                            room_num.set(row[1])
+                            department.set(row[2])
+                            location.set(row[3])
+                            status.set(row[4])
 
+                        query = "SELECT * FROM schedule WHERE room_number = %s"
+                        mycursor.execute(query, (row[1],))
+                        schedule_data = mycursor.fetchall()
 
-            wrapper_frame = Frame(self.room_info, width=351, height=355, bg='#d8dee8')
-            wrapper_frame.place(x=20, y=130)
-            room_info_wrapper = Label(wrapper_frame, text='Room Information', font=('arial', 11, 'bold'), fg='#2B3467', bg='#d8dee8')
-            room_info_wrapper.place(x=0, y=0)
+                        # Clear any existing schedule data in the schedule label
+                        schedule_label.config(text="")
+                        schedule_data.sort(key=lambda x: {'Monday': 0, 'Tuesday': 1, 'Wednesday': 2, 'Thursday': 3, 'Friday': 4, 'Saturday': 5, 'Sunday': 6}[x[1]])
 
-            Label(wrapper_frame, text='Room #: ', bg='#d8dee8', fg='#2B3467', font=('arial', 10, 'bold')).place(x=0, y=30)
-            Label(wrapper_frame, text='Department: ', bg='#d8dee8', fg='#2B3467', font=('arial', 10, 'bold')).place(x=0, y=60)
-            Label(wrapper_frame, text='Location: ', bg='#d8dee8', fg='#2B3467', font=('arial', 10, 'bold')).place(x=0, y=90)
-            Label(wrapper_frame, text='Status: ', bg='#d8dee8', fg='#2B3467', font=('arial', 10, 'bold')).place(x=0, y=120)
+                        # Display schedule data in the schedule label
+                        if schedule_data:
+                            schedule_str = "Schedule:\n"
+                            for schedule_row in schedule_data:
+                                day = schedule_row[1]
+                                start_time = schedule_row[2]
+                                end_time = schedule_row[3]
+                                schedule_str += f"{day}             : {start_time} to {end_time}\n"
+                            schedule_label.config(text=schedule_str)
+                        else:
+                            schedule_label.config(text="No schedule found for this room.")  # Update schedule label when no schedule found
 
-            Entry(wrapper_frame, width=50, border=0, bg='#d8dee8', textvariable=room_num, fg='#2B3467', font=('arial', 10, 'bold')).place(x=100, y=30)
-            Entry(wrapper_frame, width=50, border=0, bg='#d8dee8', textvariable=department, fg='#2B3467', font=('arial', 10, 'bold')).place(x=100, y=60)
-            Entry(wrapper_frame, width=50, border=0, bg='#d8dee8', textvariable=location, fg='#2B3467', font=('arial', 10, 'bold')).place(x=100, y=90)
-            Entry(wrapper_frame, width=50, border=0, bg='#d8dee8', textvariable=status, fg='#2B3467', font=('arial', 10, 'bold')).place(x=100, y=120)
+                    except mysql.connector.Error as e:
+                        print("Error: ", e)
+                    finally:
+                        if mycursor:
+                            mycursor.close()
+                        if mydb:
+                            mydb.close()
 
+                opts = StringVar()
+                Label(self.room_info, text='Room Information', fg='#2B3467', font=('Inter', 24, 'bold'), bg='#d8dee8').place(x=50, y=20)
+                Label(self.room_info, textvariable=opts, font=('Inter',12, 'bold'), fg='#2B3467', bg='#d8dee8').place(x=135   , y=70)
+                Label(self.room_info, text="Room Number: ", font=('Inter', 11, 'bold'), fg='#2B3467', bg='#d8dee8').place(x=20, y=70)
+
+                room_list = ttk.Combobox(self.room_info, textvariable=opts, width=55)
+                room_list['values'] = options
+                room_list.place(x=20, y=95)
+                room_list.current(0)
+                room_list.bind("<<ComboboxSelected>>", lookup_room)
+
+                wrapper_frame = Frame(self.room_info, width=351, height=500, bg='#d8dee8')
+                wrapper_frame.place(x=20, y=130)
+                room_info_wrapper = Label(wrapper_frame, text='Room Information', font=('arial', 11, 'bold'), fg='#2B3467', bg='#d8dee8')
+                room_info_wrapper.place(x=0, y=0)
+
+                Label(wrapper_frame, text='Room #: ', bg='#d8dee8', fg='#2B3467', font=('arial', 10, 'bold')).place(x=0, y=30)
+                Label(wrapper_frame, text='Department: ', bg='#d8dee8', fg='#2B3467', font=('arial', 10, 'bold')).place(x=0, y=60)
+                Label(wrapper_frame, text='Location: ', bg='#d8dee8', fg='#2B3467', font=('arial', 10, 'bold')).place(x=0, y=90)
+                Label(wrapper_frame, text='Status: ', bg='#d8dee8', fg='#2B3467', font=('arial', 10, 'bold')).place(x=0, y=120)
+
+                Entry(wrapper_frame, width=50, border=0, bg='#d8dee8', textvariable=room_num, fg='#2B3467', font=('arial', 10, 'bold')).place(x=100, y=30)
+                Entry(wrapper_frame, width=50, border=0, bg='#d8dee8', textvariable=department, fg='#2B3467', font=('arial', 10, 'bold')).place(x=100, y=60)
+                Entry(wrapper_frame, width=50, border=0, bg='#d8dee8', textvariable=location, fg='#2B3467', font=('arial', 10, 'bold')).place(x=100, y=90)
+                Entry(wrapper_frame, width=50, border=0, bg='#d8dee8', textvariable=status, fg='#2B3467', font=('arial', 10, 'bold')).place(x=100, y=120)
+
+                schedule_label = Label(wrapper_frame, text=" ", wraplength=350, justify=LEFT, font=('arial', 10, 'bold'), bg='#d8dee8', fg='#2B3467')
+                schedule_label.place(x=0, y=150)
+
+            except mysql.connector.Error as e:
+                print("Error", e)
+            finally:
+                if mycursor:
+                    mycursor.close()
+                if conn:
+                    conn.close()    
         room_information()
+        
 
 class room_installed_window:
     def __init__(self, master):
@@ -238,7 +278,7 @@ class room_installed_window:
             mycursor.execute(query, values)
             conn.commit()
 
-            self.listview.insert("", "end", values=(row[0], row[1], row[2], status, ''))
+            self.listview.insert("", "end", values=(row[0], row[1], row[2], status))
 
         conn.close()
 
@@ -251,6 +291,14 @@ class room_installed_window:
             port=DB_port
         )
         mycursor = conn.cursor()
+        # Check if the room is booked
+        is_booked = self.is_booked(room_number)
+
+        # Update the status of the room in the room table
+        if is_booked:
+            status = 'occupied'
+        else:
+            status = 'available'
 
         # Update the status of the room in the room table
         try:
@@ -259,7 +307,7 @@ class room_installed_window:
             print("Room status updated")
         except mysql.connector.Error as error:
             print(error)
-        print("Could not update room status")
+            print("Could not update room status")
 
         conn.close()
 
@@ -297,9 +345,7 @@ class room_installed_window:
             return False
         
     def is_room_scheduled(self, room_number):
-        # Your existing is_room_scheduled() function code
-            # Connect to the database
-        db = mysql.connector.connect(
+        conn = mysql.connector.connect(
             host = DB_hostname,
             user = DB_username,
             password = DB_password,
@@ -308,17 +354,20 @@ class room_installed_window:
         )
 
         # Query the schedule table for the given room number
-        cursor = db.cursor()
-        query = "SELECT COUNT(*) FROM schedule WHERE room_number = %s"
+        cursor = conn.cursor()
+        query = """
+                WITH schedule_count AS (
+                    SELECT COUNT(*) AS count FROM schedule WHERE room_number = %s
+                )
+                SELECT count FROM schedule_count
+        """
         params = (room_number,)
         cursor.execute(query, params)
         result = cursor.fetchone()
 
-        # Extract the count from the result
         count = result[0]
 
-        # Close the database connection
-        db.close()
+        conn.close()
 
         # If count is greater than 0, then room is scheduled, else not scheduled
         return count > 0
