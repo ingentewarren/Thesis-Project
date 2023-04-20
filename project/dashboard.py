@@ -7,7 +7,7 @@ import mysql.connector
 from room.room_install import room_installed_window
 from room.room_available import room_available_window
 from room.room_booked import room_occupied_window
-import time, calendar
+import time, calendar, datetime
 import cv2
 
 DB_database = "admin"
@@ -77,8 +77,6 @@ class MainFrame:
             account_icon = ImageTk.PhotoImage(account.resize(size=(200, 80)))
             account_icon_bg = Button(f2, image=account_icon, border=0)
             account_icon_bg.place(x=700, y=440)
-
-
 
         def multiple_window():
             global logo
@@ -227,11 +225,19 @@ class MainFrame:
                     )
                     mycursor = conn.cursor()
 
+                    now = datetime.datetime.now()
+                    current_datetime = now.strftime('%Y-%m-%d %H:%M:%S')
+
                     mycursor.execute("SELECT id, name, account_type, event, time_start, time_end FROM reservation")
                     records = mycursor.fetchall()
 
+                    self.listview.delete(*self.listview.get_children())
+
                     for row in records:
-                        self.listview.insert("", "end", values=row)
+                        time_end = row[5]
+                        time_end_datetime = datetime.datetime.strptime(time_end, '%Y-%m-%d %H:%M:%S')
+                        if time_end_datetime >= now:
+                            self.listview.insert("", "end", values=row)
                     conn.close()
 
                 

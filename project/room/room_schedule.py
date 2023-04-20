@@ -137,7 +137,7 @@ def schedule_room_custom(schedule_list):
                 # Add the scheduled event to the database
                 cursor = db.cursor()
                 query = "SELECT COUNT(*) FROM schedule WHERE day = %s AND start_time = %s AND end_time = %s AND room_number = %s"
-                params = (day, start_datetime.time(), end_datetime.time(), room_id)
+                params = (day, start_datetime.time().strftime('%H:%M:%S.%f'), end_datetime.time().strftime('%H:%M:%S.%f'), room_id)
                 cursor.execute(query, params)
                 result = cursor.fetchone()
                 
@@ -155,7 +155,9 @@ schedule_list = [
     (1, datetime.time(14, 0), datetime.time(15, 0), 312),
     (2, datetime.time(6, 47), datetime.time(7, 0), 311),
     (3, datetime.time(9, 0), datetime.time(10, 0), 311),  
-    (4, datetime.time(14, 0), datetime.time(15, 0), 312),
+    (4, datetime.time(6, 0), datetime.time(7, 55), 312),
+    (4, datetime.time(7, 0), datetime.time(10, 0), 123),  
+    (4, datetime.time(7, 0), datetime.time(7, 15), 123),
 ]
 
 schedule_room_custom(schedule_list)

@@ -4,7 +4,7 @@ from tkinter import ttk
 import tkinter.messagebox
 from PIL import ImageTk, Image
 import mysql.connector  
-import datetime
+from datetime import datetime
 
 
 DB_database = "admin"
@@ -268,8 +268,11 @@ class room_installed_window:
 
         for row in records:
             is_booked = self.is_booked(row[0])
+            is_room_scheduled = self.is_room_scheduled(row[0])
             if is_booked:
                 status = 'occupied'
+            elif is_room_scheduled:
+                status = 'scheduled'
             else:
                 status = 'available'
             
@@ -293,10 +296,13 @@ class room_installed_window:
         mycursor = conn.cursor()
         # Check if the room is booked
         is_booked = self.is_booked(room_number)
+        is_room_scheduled = self.is_room_scheduled(room_number)
 
         # Update the status of the room in the room table
         if is_booked:
             status = 'occupied'
+        elif is_room_scheduled:
+            status = 'scheduled'
         else:
             status = 'available'
 
@@ -329,39 +335,73 @@ class room_installed_window:
         conn.close()
 
         if result is not None and result[0]>0:
+            reservation_time = datetime.strptime(result[1], '%H:%M:%S').time()
+            current_time = datetime.now()
+            if current_time > reservation_time:
+                # Delete the reservation from the database
+                delete_query = "DELETE FROM reservation WHERE id = %s"
+                delete_values = (result[0],)
+                mycursor.execute(delete_query, delete_values)
+                conn.commit()
+                conn.close()
+                return False  # Reservation deleted
+            else:
+                conn.close()
             return True
         else:
             return False
+        
+    def delete_reservation(self, id):
+        conn = mysql.connector.connect(
+            host=DB_hostname,
+            user=DB_username,
+            password=DB_password,
+            database=DB_database,
+            port=DB_port
+        )
+        mycursor = conn.cursor()
+
+        # Delete the reservation from the database based on reservation_id
+        query = "DELETE FROM reservation WHERE id = %s"
+        values = (id,)
+        mycursor.execute(query, values)
+
+        conn.commit()
+        conn.close()
         
     def is_room_available(self, room_number):
         scheduled = self.is_room_scheduled(room_number)
         occupied = self.is_booked(room_number)
-        anyone_in_room = self.is_anyone_in_room()
 
         # Return True if room is available, otherwise False
-        if not scheduled and not occupied and not anyone_in_room:
+        if not scheduled and not occupied:
             return True
         else:
             return False
         
-    def is_room_scheduled(self, room_number):
+    def check_schedule(self, room_number, start_time, end_time):
         conn = mysql.connector.connect(
-            host = DB_hostname,
-            user = DB_username,
-            password = DB_password,
-            database = DB_database, 
-            port = DB_port
+            host=DB_hostname,
+            user=DB_username,
+            password=DB_password,
+            database=DB_database,
+            port=DB_port
         )
 
-        # Query the schedule table for the given room number
         cursor = conn.cursor()
+
+        start_day = start_time.strftime("%A")
+        end_day = end_time.strftime("%A")
+
+        # Query the schedule table for overlapping schedules
         query = """
-                WITH schedule_count AS (
-                    SELECT COUNT(*) AS count FROM schedule WHERE room_number = %s
-                )
-                SELECT count FROM schedule_count
+                SELECT COUNT(*) AS count FROM schedule 
+                WHERE room_number = %s 
+                AND ((start_time <= %s AND end_time >= %s) 
+                OR (start_time <= %s AND end_time >= %s)
+                OR (start_time >= %s AND end_time <= %s))
         """
-        params = (room_number,)
+        params = (room_number, start_time, start_time, end_time, end_time, start_time, end_time)
         cursor.execute(query, params)
         result = cursor.fetchone()
 
@@ -371,6 +411,11 @@ class room_installed_window:
 
         # If count is greater than 0, then room is scheduled, else not scheduled
         return count > 0
+    
+    def is_room_scheduled(self, room_number):
+        current_time = datetime.now()
+
+        return self.check_schedule(room_number, current_time, current_time)
 
     def add_room(self):
         room_window = Toplevel(self.master)
