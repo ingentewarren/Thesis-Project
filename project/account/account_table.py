@@ -1,6 +1,5 @@
 import mysql.connector
 
-
 DB_database = "admin"
 DB_username = "root"
 DB_password = "entercore123"
@@ -21,7 +20,7 @@ try:
     cur.execute("DROP TABLE IF EXISTS mobile_user")
     
     create_script = '''CREATE TABLE IF NOT EXISTS mobile_user (
-                            id SERIAL PRIMARY KEY,
+                            id INT AUTO_INCREMENT PRIMARY KEY,
                             surname varchar(100) NOT NULL,
                             firstname varchar(100) NOT NULL,
                             email varchar(100) NOT NULL,
@@ -29,7 +28,6 @@ try:
                             account_type varchar(20) NOT NULL
                         )'''
     cur.execute(create_script)
-
 
     cur.execute('SELECT * FROM mobile_user')
     for record in cur.fetchall():

@@ -1,6 +1,5 @@
 import mysql.connector
 
-
 DB_database = "admin"
 DB_username = "root"
 DB_password = "entercore123"
@@ -18,20 +17,19 @@ try:
         )
     
     cur = conn.cursor(dictionary=True)
-    cur.execute("DROP TABLE IF EXISTS room")
+    cur.execute("DROP TABLE IF EXISTS schedule")
     
-    create_script = '''CREATE TABLE IF NOT EXISTS room (
-                            id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    create_script = '''CREATE TABLE IF NOT EXISTS schedule (
+                            id INT NOT NULL AUTO_INCREMENT,
+                            day VARCHAR(10) NOT NULL,
+                            start_time TIME NOT NULL,
+                            end_time TIME NOT NULL,
                             room_number INT NOT NULL,
-                            department varchar(100) NOT NULL,
-                            location varchar(100) NOT NULL
+                            PRIMARY KEY (id)
                         )'''
     cur.execute(create_script)
 
-    alter_script = '''ALTER TABLE room ADD status VARCHAR(255)'''
-    cur.execute(alter_script)
-
-    cur.execute('SELECT * FROM room')
+    cur.execute('SELECT * FROM schedule')
     for record in cur.fetchall():
         print(record('id'), record('email'))
 

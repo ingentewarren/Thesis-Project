@@ -7,33 +7,6 @@ DB_password = "entercore123"
 DB_hostname = "localhost"
 DB_port = "3306"
 
-def create_schedule_table():
-    # Connect to the database
-    db = mysql.connector.connect(
-        host = DB_hostname,
-        user = DB_username,
-        password = DB_password,
-        database = DB_database, 
-        port = DB_port
-        )
-    
-
-    # Create the schedule table
-    cursor = db.cursor()
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS schedule (
-            id INT NOT NULL AUTO_INCREMENT,
-            day VARCHAR(10) NOT NULL,
-            start_time TIME NOT NULL,
-            end_time TIME NOT NULL,
-            room_number INT NOT NULL,
-            PRIMARY KEY (id)
-        )
-    """)
-
-    # Close the database connection
-    db.close()
-
 def add_schedule_event(start_datetime, end_datetime, room_id):
     # Connect to the database
     db = mysql.connector.connect(
@@ -137,7 +110,7 @@ def schedule_room_custom(schedule_list):
                 # Add the scheduled event to the database
                 cursor = db.cursor()
                 query = "SELECT COUNT(*) FROM schedule WHERE day = %s AND start_time = %s AND end_time = %s AND room_number = %s"
-                params = (day, start_datetime.time().strftime('%H:%M:%S.%f'), end_datetime.time().strftime('%H:%M:%S.%f'), room_id)
+                params = (day, start_datetime.time(), end_datetime.time(), room_id)
                 cursor.execute(query, params)
                 result = cursor.fetchone()
                 
@@ -155,9 +128,7 @@ schedule_list = [
     (1, datetime.time(14, 0), datetime.time(15, 0), 312),
     (2, datetime.time(6, 47), datetime.time(7, 0), 311),
     (3, datetime.time(9, 0), datetime.time(10, 0), 311),  
-    (4, datetime.time(6, 0), datetime.time(7, 55), 312),
-    (4, datetime.time(7, 0), datetime.time(10, 0), 123),  
-    (4, datetime.time(7, 0), datetime.time(7, 15), 123),
+    (4, datetime.time(14, 0), datetime.time(15, 0), 312),
 ]
 
 schedule_room_custom(schedule_list)

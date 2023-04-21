@@ -20,19 +20,18 @@ try:
     cur = conn.cursor(dictionary=True)
     cur.execute("DROP TABLE IF EXISTS reservation")
     
-    create_script = '''CREATE TABLE IF NOT EXISTS reservation (
-                            id INT AUTO_INCREMENT,
-                            name VARCHAR(255),
-                            account_Type VARCHAR(255),
-                            room_number VARCHAR(255),
-                            event VARCHAR(255),
-                            subject_Code VARCHAR(255),
-                            time_Start TIME,
-                            time_End TIME,
-                            PRIMARY key (id)
+    create_reservation_script = '''CREATE TABLE IF NOT EXISTS reservation (
+                        id INT AUTO_INCREMENT,
+                        name VARCHAR(255),
+                        account_Type VARCHAR(255),
+                        room_number INT NOT NULL,
+                        event VARCHAR(255),
+                        subject_Code VARCHAR(255),
+                        time_Start TIME,
+                        time_End TIME,
+                        PRIMARY KEY (id)
                         )'''
-    cur.execute(create_script)
-
+    cur.execute(create_reservation_script)
 
     cur.execute('SELECT * FROM reservation')
     for record in cur.fetchall():
