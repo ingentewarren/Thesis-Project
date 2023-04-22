@@ -26,19 +26,17 @@ class room_available_window:
         listview = ttk.Treeview(self.available, columns=cols, show='headings', height=18)
 
         for col in cols:
-            listview.heading(col, text=col, anchor='center')
+            listview.heading(col, text=col)
             if col == 'room #':
                 listview.column(col, width=10)
             elif col == 'department':
                 listview.column(col, width=40)
             elif col == 'Room Location':
                 listview.column(col, width=250)
-            elif col == 'status':
-                listview.column(col, width=100)
             else:
-                listview.column(col, width=100)
+                listview.column(col, width=135)
             listview.grid(row=1, column=5, columnspan=1)
-            listview.place(x=20, y=80)
+            listview.place(x=20, y=100)
             self.listview = listview
             
         self.populate_listview()

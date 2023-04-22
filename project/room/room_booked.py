@@ -20,25 +20,23 @@ class room_occupied_window:
         self.occupied.geometry("700x500")
         self.occupied.resizable(False, False)
 
-        Label(self.occupied, text='Room Available', font=('Inter', 24, 'bold'), fg='#2B3467').place(x=20, y=20)
+        Label(self.occupied, text='Room Booked', font=('Inter', 24, 'bold'), fg='#2B3467').place(x=20, y=20)
 
         cols = ('Room #', 'Department', 'Room Location', 'status')
         listview = ttk.Treeview(self.occupied, columns=cols, show='headings', height=18)
 
         for col in cols:
-            listview.heading(col, text=col, anchor='center')
+            listview.heading(col, text=col)
             if col == 'room #':
                 listview.column(col, width=10)
             elif col == 'department':
                 listview.column(col, width=40)
             elif col == 'Room Location':
                 listview.column(col, width=250)
-            elif col == 'status':
-                listview.column(col, width=100)
             else:
-                listview.column(col, width=100)
+                listview.column(col, width=135)
             listview.grid(row=1, column=5, columnspan=1)
-            listview.place(x=20, y=80)
+            listview.place(x=20, y=100)
             self.listview = listview
             
         self.populate_listview()

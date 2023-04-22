@@ -5,6 +5,7 @@ import tkinter.messagebox
 from PIL import ImageTk, Image
 import mysql.connector
 
+
 mydb = mysql.connector.connect(
     host = "localhost",
     user = "root",
@@ -28,7 +29,7 @@ class LoginPage:
             username=user.get()
             password=code.get()
 
-            sql = "SELECT * FROM account WHERE username = %s AND password = %s"
+            sql = "SELECT * FROM admin_user WHERE username = %s AND password = %s"
             mycursor.execute(sql, (username, password))
     
             result = mycursor.fetchone()

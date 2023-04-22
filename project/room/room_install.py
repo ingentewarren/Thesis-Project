@@ -20,6 +20,7 @@ class room_install:
         self.install.title("Add room")
         self.install.geometry("400x550")
         self.install.resizable(False, False)
+        
 
         global listclass
         
@@ -56,12 +57,13 @@ class room_install:
             tkinter.messagebox.showerror('Error', 'Please enter room number')
         else:
             try:
-                int(self.room_number_entry.get())
+                int(room_number)
             except ValueError:
                 tkinter.messagebox.showerror('error', 'The room number should be integers')
         
         if department == 'College of : ':
             tkinter.messagebox.showerror('Error', 'Please select a department')
+            return
 
         if location == '':
             tkinter.messagebox.showerror('Error', 'Please enter location') 
@@ -90,13 +92,14 @@ class room_install:
              
                 # Update the listview with the added room data
                 room_data = f"Room No.: {room_number}, Department: {department}, Location: {location}"
-                self.listview.insert(END, room_data)
-                
+                self.listview.insert(END, room_data)  # Add this line to update the listview
+                    
             except mysql.connector.Error as error:
                 print(error)
                 tkinter.messagebox.showerror('Error', 'Could not add the room')
             finally:
                 conn.rollback()
+                mycursor.close()
             conn.close()
 
 class room_info_window:
@@ -226,6 +229,7 @@ class room_installed_window:
         master.title('ROOM INSTALLED')
         master.geometry('700x500')
         master.resizable(False, False)
+        
 
         room_installed_screen = Frame(master, width=690, height= 490, bg='#d8dee8')
         room_installed_screen.place(x=5, y=5)
@@ -262,28 +266,32 @@ class room_installed_window:
             port=DB_port
         )
         mycursor = conn.cursor()
+        
+        try:
+            mycursor.execute("SELECT room_number, department, location, status FROM room")
+            records = mycursor.fetchall()
 
-        mycursor.execute("SELECT room_number, department, location, status FROM room")
-        records = mycursor.fetchall()
+            for row in records:
+                is_booked = self.is_booked(row[0])
+                is_room_scheduled = self.is_room_scheduled(row[0])
+                if is_booked:
+                    status = 'occupied'
+                elif is_room_scheduled:
+                    status = 'scheduled'
+                else:
+                    status = 'available'
+                
+                query = "UPDATE room SET status = %s WHERE room_number = %s"
+                values = (status, row[0])
+                mycursor.execute(query, values)
+                conn.commit()
 
-        for row in records:
-            is_booked = self.is_booked(row[0])
-            is_room_scheduled = self.is_room_scheduled(row[0])
-            if is_booked:
-                status = 'occupied'
-            elif is_room_scheduled:
-                status = 'scheduled'
-            else:
-                status = 'available'
-            
-            query = "UPDATE room SET status = %s WHERE room_number = %s"
-            values = (status, row[0])
-            mycursor.execute(query, values)
-            conn.commit()
-
-            self.listview.insert("", "end", values=(row[0], row[1], row[2], status))
-
-        conn.close()
+                self.listview.insert("", "end", values=(row[0], row[1], row[2], status))
+        except Exception as e:
+            print(e)
+            conn.rollback()
+        finally:
+            conn.close()
 
     def update_room_status(self, room_number, status):
         conn = mysql.connector.connect(
@@ -419,7 +427,14 @@ class room_installed_window:
 
     def add_room(self):
         room_window = Toplevel(self.master)
-        room_install(room_window)
+        self.room_install_obj = room_install(room_window) # Store the reference
+        room_window.wait_window(self.room_install_obj.install)
+        
+        # Clear the existing data in the list view
+        self.listview.delete(*self.listview.get_children())
+        
+        # Populate the list view with updated data
+        self.populate_listview()
 
     def show_room_info(self):
         room_info_window1 = Toplevel(self.master)

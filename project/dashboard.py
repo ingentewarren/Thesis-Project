@@ -8,6 +8,7 @@ from room.room_install import room_installed_window
 from room.room_available import room_available_window
 from room.room_booked import room_occupied_window
 import time, calendar, datetime
+
 import cv2
 
 DB_database = "admin"
@@ -15,6 +16,7 @@ DB_username = "root"
 DB_password = "entercore123"
 DB_hostname = "localhost"
 DB_port = "3306"
+
 
 
 class MainFrame:
@@ -423,7 +425,7 @@ class MainFrame:
                             print(error)
                         conn.rollback()
                         conn.close()
-            
+
                 #Update function for mobile user
                 def update():
                     id=a.get()
@@ -536,8 +538,6 @@ class MainFrame:
 
                 Label(f2, text='Accounts', font=('Inter', 24, 'bold'), bg='#d8dee8', fg='#2B3467').place(x=35, y=5)
 
-                #search_drop = ttk.Combobox(f2, values=["Search by...", 'Lastname', 'Firstname'])
-                #search_drop.place(x=500, y=20)
 
                 bg = Frame(f2, width=335, height=480, bg='#1151b8', padx=20)
                 bg.place(x=35, y=50)
