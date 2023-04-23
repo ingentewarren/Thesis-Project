@@ -4,7 +4,7 @@ import mysql.connector
 DB_database = "admin"
 DB_username = "root"
 DB_password = "entercore123"
-DB_hostname = "localhost"
+DB_hostname = "192.168.254.113"
 DB_port = "3306"
 conn = None
 cur = None

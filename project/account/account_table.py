@@ -3,7 +3,7 @@ import mysql.connector
 DB_database = "admin"
 DB_username = "root"
 DB_password = "entercore123"
-DB_hostname = "localhost"
+DB_hostname = "192.168.254.113"
 DB_port = "3306"
 conn = None
 cur = None
@@ -23,7 +23,7 @@ try:
                             id INT AUTO_INCREMENT PRIMARY KEY,
                             surname varchar(100) NOT NULL,
                             firstname varchar(100) NOT NULL,
-                            email varchar(100) NOT NULL,
+                            username varchar(100) NOT NULL,
                             password varchar(100) NOT NULL,
                             account_type varchar(20) NOT NULL
                         )'''

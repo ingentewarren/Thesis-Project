@@ -4,7 +4,7 @@ import mysql.connector
 DB_database = "admin"
 DB_username = "root"
 DB_password = "entercore123"
-DB_hostname = "localhost"
+DB_hostname = "127.0.0.1"
 DB_port = "3306"
 
 def add_schedule_event(start_datetime, end_datetime, room_id):
@@ -122,13 +122,27 @@ def schedule_room_custom(schedule_list):
     db.close()
 #list of adding schedule in the room
 schedule_list = [
-    (0, datetime.time(9, 0), datetime.time(10, 0), 312),  # Monday, 9:00 AM to 10:00 AM
-    (0, datetime.time(14, 0), datetime.time(15, 0), 312),  # Monday, 2:00 PM to 3:00 PM
-    (1, datetime.time(9, 0), datetime.time(10, 0), 312),  # Monday, 9:00 AM to 10:00 AM
-    (1, datetime.time(14, 0), datetime.time(15, 0), 312),
-    (2, datetime.time(6, 47), datetime.time(7, 0), 311),
-    (3, datetime.time(9, 0), datetime.time(10, 0), 311),  
-    (4, datetime.time(14, 0), datetime.time(15, 0), 312),
+    (0, datetime.time(8, 30), datetime.time(10, 30), 312), 
+    (0, datetime.time(11, 0), datetime.time(12, 0), 312),  
+    (0, datetime.time(13, 30), datetime.time(14, 30), 312),  
+    (0, datetime.time(15, 0), datetime.time(16, 0), 312),
+    (1, datetime.time(7, 30), datetime.time(8, 30), 312),
+    (1, datetime.time(9, 30), datetime.time(1, 30), 312),
+    (2, datetime.time(10, 30), datetime.time(11, 30), 312),
+    (2, datetime.time(12, 30), datetime.time(13, 30), 312),
+    (3, datetime.time(7, 30), datetime.time(8, 30), 312),
+    (4, datetime.time(8, 0), datetime.time(9, 0), 312),
+    (4, datetime.time(11, 30), datetime.time(12, 30), 312),
+    (4, datetime.time(14, 30), datetime.time(15, 30), 312),
+    (6, datetime.time(11, 0), datetime.time(11, 30), 312),
+    (0, datetime.time(8, 30), datetime.time(10, 30), 205), 
+    (0, datetime.time(11, 0), datetime.time(12, 0), 205), 
+    (1, datetime.time(7, 30), datetime.time(8, 30), 205),
+    (1, datetime.time(9, 30), datetime.time(1, 30), 205),
+    (2, datetime.time(10, 30), datetime.time(11, 30), 205),
+    (3, datetime.time(7, 30), datetime.time(8, 30), 205),
+    (4, datetime.time(8, 0), datetime.time(9, 0), 205),
+    (4, datetime.time(14, 30), datetime.time(15, 30), 205),
 ]
 
 schedule_room_custom(schedule_list)
