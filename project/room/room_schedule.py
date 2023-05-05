@@ -1,149 +1,54 @@
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import db
 import datetime
-import mysql.connector
 
-DB_database = "admin"
-DB_username = "root"
-DB_password = "entercore123"
-DB_hostname = "127.0.0.1"
-DB_port = "3306"
+if not firebase_admin._apps:
+    # Initialize the app with a service account
+    cred = credentials.Certificate('D:/DOWNLOADS/thesismobileapp-304b0-firebase-adminsdk-2eufd-4703063921.json')
+    firebase_admin.initialize_app(cred, {
+        'databaseURL': 'https://thesismobileapp-304b0-default-rtdb.asia-southeast1.firebasedatabase.app/'
+    })
 
-def add_schedule_event(start_datetime, end_datetime, room_id):
-    # Connect to the database
-    db = mysql.connector.connect(
-        host = DB_hostname,
-        user = DB_username,
-        password = DB_password,
-        database = DB_database, 
-        port = DB_port
-        )
+def is_schedule():
+    ref = db.reference('Room')
+    rooms_snapshot = ref.get()
 
-    # Add the scheduled event to the database
-    cursor = db.cursor()
-    query = "INSERT INTO schedule (day, start_time, end_time, room_number) VALUES (%s, %s, %s, %s)"
-    params = (start_datetime.strftime("%A"), start_datetime.time(), end_datetime.time(), room_id)
-    try:
-        cursor.execute(query, params)
-        # Commit the changes and close the database connection
-        db.commit()
-        db.close()
-        print("Schedule event added successfully.")
-    except mysql.connector.IntegrityError as e:
-        if 'Duplicate entry' in str(e):
-            print("Error: Schedule event already exists.")
-        else:
-            print("Error: Failed to add schedule event.")
-        db.rollback()
-        db.close()
+    if not rooms_snapshot:
+        print("Error: Unable to retrieve rooms data from the database")
+        return
 
-def get_schedule(day):
-    # Connect to the database
-    db = mysql.connector.connect(
-        host = DB_hostname,
-        user = DB_username,
-        password = DB_password,
-        database = DB_database, 
-        port = DB_port
-    )
+    if not isinstance(rooms_snapshot, dict):
+        print("Error: Rooms data is not in the expected format")
+        return
 
-    # Query the schedule table for the given day
-    cursor = db.cursor()
-    query = "SELECT start_time, end_time, room_number FROM schedule WHERE day = %s"
-    params = (day,)
-    cursor.execute(query, params)
-    result = cursor.fetchall()
-
-    # Format the result as a list of tuples
-    schedule = []
-    for row in result:
-        start_time = row[0].strftime("%H:%M:%S")
-        end_time = row[1].strftime("%H:%M:%S")
-        room_id = row[2]
-        schedule.append((start_time, end_time, room_id))
-
-    db.close()
-    return schedule
-
-def schedule_room_weekdays(start_time, end_time, room_id):
-    # Create a list of weekdays to schedule
-    weekdays = [0, 1, 2, 3, 4]  # Monday to Friday
-    
-    # Calculate the next occurrence of the scheduled time
-    today = datetime.date.today()
-    for i in range(7):
-        date = today + datetime.timedelta(days=i)
-        if date.weekday() in weekdays:
-            # Combine the date with the start time
-            start_datetime = datetime.datetime.combine(date, start_time)
-            
-            # Combine the date with the end time
-            end_datetime = datetime.datetime.combine(date, end_time)
-            
-            # Add the scheduled event to the database
-            add_schedule_event(start_datetime, end_datetime, room_id)
-
-def schedule_room_custom(schedule_list):
-    db = mysql.connector.connect(
-        host = DB_hostname,
-        user = DB_username,
-        password = DB_password,
-        database = DB_database, 
-        port = DB_port
-        )
-
-    for schedule in schedule_list:
-        day = schedule[0]
-        start_time = schedule[1]
-        end_time = schedule[2]
-        room_id = schedule[3]
-        
-        # Calculate the next occurrence of the scheduled time
-        today = datetime.date.today()
-        for i in range(7):
-            date = today + datetime.timedelta(days=i)
-            if date.weekday() == day:
-                # Combine the date with the start time
-                start_datetime = datetime.datetime.combine(date, start_time)
-                
-                # Combine the date with the end time
-                end_datetime = datetime.datetime.combine(date, end_time)
-                
-                # Add the scheduled event to the database
-                cursor = db.cursor()
-                query = "SELECT COUNT(*) FROM schedule WHERE day = %s AND start_time = %s AND end_time = %s AND room_number = %s"
-                params = (day, start_datetime.time(), end_datetime.time(), room_id)
-                cursor.execute(query, params)
-                result = cursor.fetchone()
-                
-                # If the schedule doesn't exist, add it to the database
-                if result[0] == 0:
-                    add_schedule_event(start_datetime, end_datetime, room_id)
-
-    # Close the database connection
-    db.close()
-#list of adding schedule in the room
-schedule_list = [
-    (0, datetime.time(8, 30), datetime.time(10, 30), 312), 
-    (0, datetime.time(11, 0), datetime.time(12, 0), 312),  
-    (0, datetime.time(13, 30), datetime.time(14, 30), 312),  
-    (0, datetime.time(15, 0), datetime.time(16, 0), 312),
-    (1, datetime.time(7, 30), datetime.time(8, 30), 312),
-    (1, datetime.time(9, 30), datetime.time(1, 30), 312),
-    (2, datetime.time(10, 30), datetime.time(11, 30), 312),
-    (2, datetime.time(12, 30), datetime.time(13, 30), 312),
-    (3, datetime.time(7, 30), datetime.time(8, 30), 312),
-    (4, datetime.time(8, 0), datetime.time(9, 0), 312),
-    (4, datetime.time(11, 30), datetime.time(12, 30), 312),
-    (4, datetime.time(14, 30), datetime.time(15, 30), 312),
-    (6, datetime.time(11, 0), datetime.time(11, 30), 312),
-    (0, datetime.time(8, 30), datetime.time(10, 30), 205), 
-    (0, datetime.time(11, 0), datetime.time(12, 0), 205), 
-    (1, datetime.time(7, 30), datetime.time(8, 30), 205),
-    (1, datetime.time(9, 30), datetime.time(1, 30), 205),
-    (2, datetime.time(10, 30), datetime.time(11, 30), 205),
-    (3, datetime.time(7, 30), datetime.time(8, 30), 205),
-    (4, datetime.time(8, 0), datetime.time(9, 0), 205),
-    (4, datetime.time(14, 30), datetime.time(15, 30), 205),
-]
-
-schedule_room_custom(schedule_list)
-
+    now = datetime.datetime.now()
+    for room_id, room_data in rooms_snapshot.items():
+        if not isinstance(room_data, dict):
+            print(f"Error: Room data for room {room_id} is not in the expected format")
+            continue
+        schedule_ref = ref.child(room_id).child('Schedule')
+        schedule_snapshot = schedule_ref.get()
+        if not schedule_snapshot:
+            continue
+        for schedule_id, schedule_data in schedule_snapshot.items():
+            if not isinstance(schedule_data, dict):
+                print(f"Error: Schedule data for schedule {schedule_id} in room {room_id} is not in the expected format")
+                continue
+            start_time = datetime.datetime.strptime(schedule_data.get('Start Time', ''), '%H:%M')
+            end_time = datetime.datetime.strptime(schedule_data.get('End Time', ''), '%H:%M')
+            if start_time.time() <= now.time() <= end_time.time():
+                room_ref = ref.child(room_id)
+                room_ref.update({
+                    'Availability': False,
+                    'Occupant': schedule_data.get('Occupant', ''),
+                    'Schedule': schedule_data
+                })
+                break
+            else:
+                room_ref = ref.child(room_id)
+                room_ref.update({
+                    'Availability': True,
+                    'Occupant': '',
+                    'Schedule': {}
+                })

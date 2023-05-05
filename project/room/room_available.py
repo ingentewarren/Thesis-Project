@@ -1,16 +1,19 @@
 from tkinter import *
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, END
 import tkinter.messagebox
 from PIL import ImageTk, Image
-import mysql.connector  
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import db
+import json
 
-
-DB_database = "admin"
-DB_username = "root"
-DB_password = "entercore123"
-DB_hostname = "192.168.254.113"
-DB_port = "3306"
+if not firebase_admin._apps:
+    # Initialize the app with a service account
+    cred = credentials.Certificate('D:/DOWNLOADS/thesismobileapp-304b0-firebase-adminsdk-2eufd-4703063921.json')
+    firebase_admin.initialize_app(cred, {
+        'databaseURL': 'https://thesismobileapp-304b0-default-rtdb.asia-southeast1.firebasedatabase.app/'
+    })
 
 class room_available_window:
     def __init__(self, available):
@@ -42,22 +45,29 @@ class room_available_window:
         self.populate_listview()
 
     def populate_listview(self):
-        conn = mysql.connector.connect(
-            host=DB_hostname,
-            user=DB_username,
-            password=DB_password,
-            database=DB_database,
-            port=DB_port
-        )
-        mycursor = conn.cursor()
+        ref = db.reference('Room')
+        rooms_snapshot = ref.get()
 
-        mycursor.execute("SELECT room_number, department, location, status FROM room WHERE status ='available'")
-        records = mycursor.fetchall()
+        if not rooms_snapshot:
+            print("Error: Unable to retrieve rooms data from the database")
+            return
 
-        for row in records:
-            self.listview.insert("", "end", values=row)
-        conn.close()
+        if not isinstance(rooms_snapshot, dict):
+            print("Error: Rooms data is not in the expected format")
+            return
 
+        for room_id, room_data in rooms_snapshot.items():
+            if not isinstance(room_data, dict):
+                print(f"Error: Room data for room {room_id} is not in the expected format")
+                continue
+            room_number = room_data.get('Room Number', '')
+            department = room_data.get('department', '')
+            location = room_data.get('location', '')
+            availability = room_data.get('Availability', True)
+            status = "Available" if availability else "Not Available"
+            
+            if availability:
+                self.listview.insert("", "end", values=(room_number, department, location, status))
 
 if __name__ == '__main__':
     root = Tk()

@@ -3,16 +3,18 @@ import tkinter as tk
 from tkinter import ttk
 import tkinter.messagebox
 from PIL import ImageTk, Image
-import mysql.connector
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import db
+import json
 
-
-mydb = mysql.connector.connect(
-    host = "192.168.254.113",
-    user = "root",
-    password = "entercore123",
-    database = "admin"
-)
-
+if not firebase_admin._apps:
+    # Initialize the app with a service account
+    cred = credentials.Certificate('D:/DOWNLOADS/thesismobileapp-304b0-firebase-adminsdk-2eufd-4703063921.json')
+    firebase_admin.initialize_app(cred, {
+        'databaseURL': 'https://thesismobileapp-304b0-default-rtdb.asia-southeast1.firebasedatabase.app/'
+    })
+    
 class LoginPage:
     def __init__(self, master):
         super().__init__()
@@ -23,26 +25,29 @@ class LoginPage:
         
         global banner
 
+        window_icon = ImageTk.PhotoImage(Image.open('image/bisu-logo.png'))
+        master.iconphoto(False, window_icon)
         def sign_in():
-            mycursor = mydb.cursor()
+            # Get a reference to your database
+            ref = db.reference('/admin')
 
             username=user.get()
             password=code.get()
 
-            sql = "SELECT * FROM admin_user WHERE username = %s AND password = %s"
-            mycursor.execute(sql, (username, password))
-    
-            result = mycursor.fetchone()
+            # Get the user from the database
+            result = ref.order_by_child('username').equal_to(username).get()
 
             if result:
-                tkinter.messagebox.showinfo('', 'Log in Success')
-                root.destroy()
-                import dashboard
-
-            elif username == ' ' and password == ' ':
-                tkinter.messagebox.showinfo(' ', 'Please fill up the form')
+                for key, value in result.items():
+                    # Check the password
+                    if value['password'] == password:
+                        tkinter.messagebox.showinfo('', 'Log in Success')
+                        root.destroy()
+                        import dashboard
+                    else:
+                        tkinter.messagebox.showinfo('', 'Incorrect password')
             else:
-                tkinter.messagebox.showinfo('', 'Incorrect')
+                tkinter.messagebox.showinfo('', 'Incorrect username')
         
         
         frame1=Frame(root, width=450, height=350)
